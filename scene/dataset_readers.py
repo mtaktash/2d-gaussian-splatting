@@ -386,11 +386,9 @@ def readCamerasInstantNGPTransforms(
                     FovX=FovX,
                     image_path=image_path,
                     image_name=image_name,
-                    depth_path="",
-                    depth_params=None,
                     width=w,
                     height=h,
-                    is_test=test,
+                    image=image,
                 )
             )
 
