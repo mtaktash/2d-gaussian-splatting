@@ -49,7 +49,6 @@ def readDepthImages(renders_dir, gt_dir):
 
         render = load_img(renders_dir / render_fname)
         render = render / 1000.0
-        renders.append(torch.from_numpy(render).unsqueeze(0).cuda())
 
         gt = cv2.imread(gt_dir / gt_fname, cv2.IMREAD_UNCHANGED)
         gt = gt / 1000
@@ -272,6 +271,7 @@ def evaluate(model_paths, scannetpp_root):
             with open(scene_dir + "/per_view.json", "w") as fp:
                 json.dump(per_view_dict[scene_dir], fp, indent=True)
         except Exception as e:
+            raise e
             print("Unable to compute metrics for model", scene_dir)
 
 
