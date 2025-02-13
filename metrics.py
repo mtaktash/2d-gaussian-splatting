@@ -47,12 +47,15 @@ def readDepthImages(renders_dir, gt_dir):
 
     for render_fname, gt_fname in zip(renders_files, gt_files):
 
-        render = load_img(renders_dir / fname)
+        render = load_img(renders_dir / render_fname)
         render = render / 1000.0
         renders.append(torch.from_numpy(render).unsqueeze(0).cuda())
 
         gt = cv2.imread(gt_dir / gt_fname, cv2.IMREAD_UNCHANGED)
         gt = gt / 1000
+        gt = cv2.resize(
+            gt, (render.shape[1], render.shape[0]), interpolation=cv2.INTER_NEAREST
+        )
 
         mask = gt != 0
 
