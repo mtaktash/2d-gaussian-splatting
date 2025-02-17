@@ -485,8 +485,14 @@ def readScannetpIphoneInfo(path, eval, llffhold=8, init_type="sfm"):
         test=False,
     )
     if llffhold > 0:
-        train_cam_infos = [c for idx, c in enumerate(cam_infos) if idx % llffhold != 0]
+        # take 1/llffhold of the cameras for testing
         test_cam_infos = [c for idx, c in enumerate(cam_infos) if idx % llffhold == 0]
+
+        # 1. take the rest of the cameras for training cameras
+        train_cam_infos = [c for idx, c in enumerate(cam_infos) if idx % llffhold != 0]
+
+        # 2. additionally, take a subset of train cameras on downsampled by 3
+        train_cam_infos = [c for idx, c in enumerate(train_cam_infos) if idx % 3 == 0]
 
     if not eval:
         train_cam_infos.extend(test_cam_infos)

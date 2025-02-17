@@ -13,15 +13,7 @@ import os
 import time
 from argparse import ArgumentParser
 
-blender_scenes = [
-    # "textured_plane_with_cube"
-]
-mipnerf360_outdoor_scenes = [
-    # "garden"
-]
-mipnerf360_indoor_scenes = [
-    # "room"
-]
+
 scannetpp_scenes = [
     "0a7cc12c0e",
     "0cf2e9402d",
@@ -35,77 +27,24 @@ scannetpp_scenes = [
     "5748ce6f01",
     "7079b59642",
 ]
-hypersim_scenes = [
-    # "ai_001_003",
-    # "ai_001_004",
-    # "ai_003_010",
-    # "ai_004_003",
-    # "ai_005_001",
-]
 
 parser = ArgumentParser(description="Full evaluation script parameters")
 parser.add_argument("--skip_training", action="store_true")
 parser.add_argument("--skip_rendering", action="store_true")
 parser.add_argument("--skip_metrics", action="store_true")
-parser.add_argument("--output_path", default="./eval")
+parser.add_argument("--output_path", default="./eval_iphone_sfm_3x_sampled")
 args, _ = parser.parse_known_args()
 
 all_scenes = []
-all_scenes.extend(blender_scenes)
-all_scenes.extend(mipnerf360_outdoor_scenes)
-all_scenes.extend(mipnerf360_indoor_scenes)
 all_scenes.extend(scannetpp_scenes)
-all_scenes.extend(hypersim_scenes)
 
 if not args.skip_training or not args.skip_rendering:
-    parser.add_argument("--blender", "-blen", type=str, required=True)
-    parser.add_argument("--mipnerf360", "-m360", type=str, required=True)
     parser.add_argument("--scannetpp", "-spp", type=str, required=True)
-    parser.add_argument("--hypersim", type=str, required=True)
     args = parser.parse_args()
 
 if not args.skip_training:
     os.makedirs(args.output_path, exist_ok=True)
     common_args = " --eval --test_iterations -1 --resolution 2"
-
-    start_time = time.time()
-    for scene in blender_scenes:
-        source = args.blender + "/" + scene
-        os.system(
-            "python train.py -s "
-            + source
-            + " -m "
-            + args.output_path
-            + "/"
-            + scene
-            + common_args
-        )
-    blender_timing = (time.time() - start_time) / 60.0
-
-    start_time = time.time()
-    for scene in mipnerf360_outdoor_scenes:
-        source = args.mipnerf360 + "/" + scene
-        os.system(
-            "python train.py -s "
-            + source
-            + " -i images_4 -m "
-            + args.output_path
-            + "/"
-            + scene
-            + common_args
-        )
-    for scene in mipnerf360_indoor_scenes:
-        source = args.mipnerf360 + "/" + scene
-        os.system(
-            "python train.py -s "
-            + source
-            + " -i images_2 -m "
-            + args.output_path
-            + "/"
-            + scene
-            + common_args
-        )
-    m360_timing = (time.time() - start_time) / 60.0
 
     start_time = time.time()
     for scene in scannetpp_scenes:
@@ -121,49 +60,24 @@ if not args.skip_training:
         )
     scannetpp_timing = (time.time() - start_time) / 60.0
 
-    start_time = time.time()
-    for scene in hypersim_scenes:
-        source = args.hypersim + "/" + scene
-        os.system(
-            "python train.py -s "
-            + source
-            + " -m "
-            + args.output_path
-            + "/"
-            + scene
-            + common_args
-        )
-    hypersim_timing = (time.time() - start_time) / 60.0
-
-    with open(os.path.join(args.output_path, "timing.txt"), "w") as file:
-        file.write(
-            f"m360: {m360_timing} minutes \nscannetpp: {scannetpp_timing} minutes \nblender: {blender_timing} minutes \nhypersim: {hypersim_timing} minutes \n"
-        )
 
 if not args.skip_rendering:
     all_sources = []
-    for scene in blender_scenes:
-        all_sources.append(args.blender + "/" + scene)
-    for scene in mipnerf360_outdoor_scenes:
-        all_sources.append(args.mipnerf360 + "/" + scene)
-    for scene in mipnerf360_indoor_scenes:
-        all_sources.append(args.mipnerf360 + "/" + scene)
+
     for scene in scannetpp_scenes:
         all_sources.append(args.scannetpp + "/" + scene + "/iphone")
-    for scene in hypersim_scenes:
-        all_sources.append(args.hypersim + "/" + scene)
 
     common_args = " --quiet --eval --skip_train --skip_mesh "
     for scene, source in zip(all_scenes, all_sources):
-        os.system(
-            "python render.py --iteration 7000 -s "
-            + source
-            + " -m "
-            + args.output_path
-            + "/"
-            + scene
-            + common_args
-        )
+        # os.system(
+        #     "python render.py --iteration 7000 -s "
+        #     + source
+        #     + " -m "
+        #     + args.output_path
+        #     + "/"
+        #     + scene
+        #     + common_args
+        # )
         os.system(
             "python render.py --iteration 30000 -s "
             + source

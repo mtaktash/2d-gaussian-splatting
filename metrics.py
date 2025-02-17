@@ -9,6 +9,7 @@
 # For inquiries contact  george.drettakis@inria.fr
 #
 
+import glob
 import json
 import os
 from argparse import ArgumentParser
@@ -29,7 +30,7 @@ def readImages(renders_dir, gt_dir):
     renders = []
     gts = []
     image_names = []
-    for fname in os.listdir(renders_dir):
+    for fname in sorted(os.listdir(renders_dir)):
         render = Image.open(renders_dir / fname)
         gt = Image.open(gt_dir / fname)
         renders.append(tf.to_tensor(render).unsqueeze(0)[:, :3, :, :].cuda())
@@ -42,16 +43,17 @@ def readDepthImages(renders_dir, gt_dir):
     renders = []
     gts = []
 
-    renders_files = sorted(os.listdir(renders_dir))
-    gt_files = sorted(os.listdir(gt_dir))
+    renders_files = sorted(glob.glob(f"{renders_dir}/*.tiff"))
+    gt_files = sorted(glob.glob(f"{gt_dir}/*.png"))
+
+    assert len(renders_files) == len(gt_files)
 
     for render_fname, gt_fname in zip(renders_files, gt_files):
 
-        render = load_img(renders_dir / render_fname)
-        render = render / 1000.0
+        render = load_img(render_fname)
 
-        gt = cv2.imread(gt_dir / gt_fname, cv2.IMREAD_UNCHANGED)
-        gt = gt / 1000
+        gt = cv2.imread(gt_fname, cv2.IMREAD_UNCHANGED)
+        gt = gt / 1000.0
         gt = cv2.resize(
             gt, (render.shape[1], render.shape[0]), interpolation=cv2.INTER_NEAREST
         )
